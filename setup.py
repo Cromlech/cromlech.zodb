@@ -5,8 +5,12 @@ version = '0.1'
 
 install_requires = [
     'setuptools',
+    'dolmen.container',
     'cromlech.io',
+    'transaction',
     'zope.interface',
+    'zope.component',
+    'zope.location',
     ]
 
 tests_require = [
