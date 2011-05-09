@@ -5,15 +5,16 @@ version = '0.1'
 
 install_requires = [
     'setuptools',
-    'dolmen.container',
     'cromlech.io',
     'transaction',
     'zope.interface',
     'zope.component',
     'zope.location',
+    'ZODB3', # included Btrees
     ]
 
 tests_require = [
+    'zope.testing',
     ]
 
 setup(name='cromlech.zodb',
