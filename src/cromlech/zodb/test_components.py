@@ -2,6 +2,7 @@ from persistent.mapping import PersistentMapping
 from zope.interface import Interface, implements
 from zope.component import getUtility, getSiteManager, getGlobalSiteManager
 from ZODB import DB
+from ZODB.DemoStorage import DemoStorage
 import transaction
 
 import components
@@ -68,7 +69,7 @@ def test_local_shadows_global():
 
 
 def test_local_utility_persitent():
-    db = DB("test.fs")
+    db = DB(DemoStorage('test_storage'))
     connection = db.open()
     root = connection.root()
     site = root['site'] = SimpleSite()
@@ -80,9 +81,18 @@ def test_local_utility_persitent():
     dummy.answer = 'no'
     assert dummy.callme() == "Perculiarly, no"
     transaction.commit()
-    db.close()
+    del site
     del dummy
     connection = db.open()
-    site = root['site']
+    site = connection.root()['site']
+    dummy = getUtility(IDummyUtil, context=site)
+    assert dummy.callme() == "Perculiarly, no"
+    # and aborting does not save state
+    dummy.answer = 'yes'
+    assert dummy.callme() == "Perculiarly, yes"
+    transaction.abort
+    connection = db.open()
+    site = connection.root()['site']
+    dummy = getUtility(IDummyUtil, context=site)
     assert dummy.callme() == "Perculiarly, no"
     db.close()
