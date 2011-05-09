@@ -5,7 +5,7 @@ from ZODB import DB
 from ZODB.DemoStorage import DemoStorage
 import transaction
 
-import components
+from cromlech.zodb import components
 
 
 

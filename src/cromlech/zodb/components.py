@@ -51,7 +51,7 @@ class PersitentOOBTree(Persistent):
     """A persitent wrapper around a OOBTree"""
 
     def __init__(self):
-        self.data = OOBTree()
+        self._data = OOBTree()
         Persistent.__init__(self)
         self.__len = Length()
 
