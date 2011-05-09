@@ -4,13 +4,15 @@ with cromlech.
 declare application with entry points
 =======================================
 
-FixMe
+``cromlech.zodb`` contains a utility to help initialize application based on
+entry_points provided by packages.
+
 
 LocalSiteManager
 ==================
 
 The package provide a PossibleSite class to be used as a mixin for your
-applications root objects ::
+applications root objects::
 
     >>> from cromlech.zodb.components import PossibleSite
     >>> from zope.component.interfaces import IPossibleSite
@@ -20,7 +22,7 @@ applications root objects ::
     >>> verifyObject(IPossibleSite, site)
     True
 
-This is a possible site, not yet a site:
+This is a possible site, not yet a site::
 
     >>> from zope.component.interfaces import ISite
     >>> ISite.providedBy(site)

@@ -27,7 +27,6 @@ def initialize_applications(db):
                 application = root[name] = factory()
                 if not ISite.providedBy(application):
                     site_manager = LocalSiteManager(application)
-                    application.setSiteManager(site_manager)
 
                 print "initialized %r" % name
     conn.close()

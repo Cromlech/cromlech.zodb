@@ -150,7 +150,7 @@ class LocalSiteManager(
         # Locate the site manager
         site.setSiteManager(self)
         self.__parent__ = site
-        self.__name__ = '++etc++site'  # FIXME provide traverser ?
+        self.__name__ = '++etc++site'
 
     def _init_registries(self):
         self.adapters = _LocalAdapterRegistry()
@@ -189,31 +189,5 @@ def SiteManagerAdapter(ob):
             # site manager
             return zope.component.getGlobalSiteManager()
 
-
-#~ def changeSiteConfigurationAfterMove(site, event):
-    #~ """After a site is moved, its site manager links have to be updated."""
-    #~ if event.newParent is not None:
-        #~ next = _findNextSiteManager(site)
-        #~ if next is None:
-            #~ next = zope.component.getGlobalSiteManager()
-        #~ site.getSiteManager().__bases__ = (next, )
-#~ 
-#~ 
-#~ @zope.component.adapter(
-    #~ PossibleSite,
-    #~ zope.container.interfaces.IObjectMovedEvent)
-#~ def siteManagerContainerRemoved(container, event):
-    #~ # The relation between SiteManagerContainer and LocalSiteManager is a
-    #~ # kind of containment hierarchy, but it is not expressed via containment,
-    #~ # but rather via an attribute (_sm).
-    #~ #
-    #~ # When the parent is deleted, this needs to be propagated to the children,
-    #~ # and since we don't have "real" containment, we need to do that manually.
-#~ 
-    #~ try:
-        #~ sm = container.getSiteManager()
-    #~ except ComponentLookupError:
-        #~ pass
-    #~ else:
-        #~ for ignored in zope.component.subscribers((sm, event), None):
-            #~ pass # work happens during adapter fetch
+# TODO :
+#   zope.site propagate IObjectMovedEvent to LocalSiteManager, shall we ?
