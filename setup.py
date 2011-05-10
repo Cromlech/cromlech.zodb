@@ -20,7 +20,8 @@ tests_require = [
 
 setup(name='cromlech.zodb',
       version=version,
-      description="",
+      description="Cromlech Web Framework utility methods and components " +
+                  "for application using the ZODB",
       long_description=open("README.txt").read() + "\n" +
                        open(os.path.join("src", 'cromlech', 'zodb',
                                          "test_base.txt")).read() + "\n" +
