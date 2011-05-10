@@ -20,9 +20,16 @@ class ZodbSite(object):
         root = self.environ['zodb.connection'].root()
         site = root.get(self.name)
         if site is None:
+            self.environ['zodb.connection'].transaction_manager.get().abort()
+            self.environ['zodb.connection'].close()
             raise RuntimeError("Site %r doesn't exist" % self.name)
         alsoProvides(site, IPublicationRoot)
         return site
 
     def __exit__(self, type, value, traceback):
-        self.environ['zodb.connection'].close()
+        conn = self.environ['zodb.connection']
+        if type is None:
+            conn.transaction_manager.get().commit()
+        else:
+            conn.transaction_manager.get().abort()
+        conn.close()
