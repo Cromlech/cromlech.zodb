@@ -1,0 +1,2 @@
+recursive-include src/cromlech/zodb *.txt *.py
+recursive-include docs *.txt

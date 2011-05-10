@@ -1,7 +1,9 @@
 Changelog
 =========
 
-0.1dev (unreleased)
+0.1a1
 -------------------
 
 - Initial release
+- components to replace ``zope.site``
+- initialize_applications taken from defunct ``cromlech.wsgi``

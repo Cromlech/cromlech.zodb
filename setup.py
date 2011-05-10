@@ -22,6 +22,8 @@ setup(name='cromlech.zodb',
       version=version,
       description="",
       long_description=open("README.txt").read() + "\n" +
+                       open(os.path.join("src", 'cromlech', 'zodb',
+                                         "test_base.txt")).read() + "\n" +
                        open(os.path.join("docs", "HISTORY.txt")).read(),
       classifiers=[
         "Programming Language :: Python",

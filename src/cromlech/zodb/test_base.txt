@@ -1,5 +1,3 @@
-cromlech.zodb provide base utilities to have sites persisted in zodb served
-with cromlech.
 
 declare application with entry points
 =======================================
@@ -42,7 +40,7 @@ We can set up a local site manager::
     >>> verifyObject(ILocalSiteManager, lsm)
     True
     
-A Possible site with a local site manager becomes an ISite::
+A Possible site with a local site manager becomes an ISite::
 
     >>> from zope.component.interfaces import ISite
     >>> ISite.providedBy(site)
