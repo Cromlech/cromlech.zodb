@@ -7,6 +7,11 @@ declare application with entry points
 ``cromlech.zodb`` contains a utility to help initialize application based on
 entry_points provided by packages.
 
+ZODB Context Manager
+======================
+
+The zodb context manager gives you a handle on an application stored in
+a database.
 
 LocalSiteManager
 ==================

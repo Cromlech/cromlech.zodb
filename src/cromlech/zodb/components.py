@@ -11,20 +11,19 @@ import interfaces
 
 
 class PossibleSite(object):
-    """a base implementation of a possible site, to be used as 
+    """a base implementation of a possible site, to be used as
     a mixin
     """
     zope.interface.implements(zope.component.interfaces.IPossibleSite)
 
     _sm = None
-    
+
     def getSiteManager(self):
         if self._sm is not None:
             return self._sm
         else:
             raise zope.component.interfaces.ComponentLookupError(
                                                     'no site manager defined')
-
 
     def setSiteManager(self, sm):
         if zope.component.interfaces.ISite.providedBy(self):
@@ -107,14 +106,14 @@ class PersitentOOBTree(Persistent):
 
     def values(self, key=None):
         return self._data.values(key)
-    
+
 
 class LocalSiteManager(
     PersitentOOBTree,
     zope.component.persistentregistry.PersistentComponents,
     ):
     """Local Site Manager implementation for zodb
-    
+
     Use this to have an application with eg. local utility"""
 
     zope.interface.implements(interfaces.ILocalSiteManager)
@@ -126,14 +125,12 @@ class LocalSiteManager(
         # Update base subs
         for base in self.__bases__:
             if ((base not in bases)
-                and interfaces.ILocalSiteManager.providedBy(base)
-                ):
+                 and interfaces.ILocalSiteManager.providedBy(base)):
                 base.removeSub(self)
 
         for base in bases:
             if ((base not in self.__bases__)
-                and interfaces.ILocalSiteManager.providedBy(base)
-                ):
+                 and interfaces.ILocalSiteManager.providedBy(base)):
                 base.addSub(self)
 
         super(LocalSiteManager, self)._setBases(bases)
@@ -146,7 +143,7 @@ class LocalSiteManager(
         # ATM in cromlech we are always the root
         next = zope.component.getGlobalSiteManager()
         self.__bases__ = (next, )
-        
+
         # Locate the site manager
         site.setSiteManager(self)
         self.__parent__ = site
@@ -165,9 +162,7 @@ class LocalSiteManager(
 
     def removeSub(self, sub):
         """See interfaces.registration.ILocatedRegistry"""
-        self.subs = tuple(
-            [s for s in self.subs if s is not sub] )
-
+        self.subs = tuple([s for s in self.subs if s is not sub])
 
 
 @zope.component.provideAdapter

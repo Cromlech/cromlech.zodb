@@ -20,7 +20,7 @@ class EntryPointMocker(object):
         self.entries = entries
 
     def __enter__(self):
-        pkg_resources.working_set.add_entry(testDataPath)
+
         def mocked_iter_entry_points(group, name=None):
             """simulate that a package provide an entry_point
             """
@@ -43,11 +43,13 @@ class MyApp(PossibleSite, Persistent):
     def __call__(self):
         return "running !"
 
+
 class YourApp(MyApp):
     """An application"""
 
     def __call__(self):
         return "Also running !"
+
 
 def test_initialize():
     with EntryPointMocker(['myapp=cromlech.zodb.tests.test_initialize:MyApp',
@@ -73,7 +75,7 @@ def test_no_implementation_fails():
 
 
 def test_same_name_fails():
-     with EntryPointMocker(['myapp=cromlech.zodb.tests.test_initialize:MyApp',
+    with EntryPointMocker(['myapp=cromlech.zodb.tests.test_initialize:MyApp',
                         'myapp=cromlech.zodb.tests.test_initialize:MyApp']):
         db = DB(DemoStorage())
         with pytest.raises(KeyError):

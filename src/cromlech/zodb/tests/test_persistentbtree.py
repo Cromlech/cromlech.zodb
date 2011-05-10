@@ -65,12 +65,12 @@ def test_iterators():
     o = folder["bar"] = folder["foo"] = object()
     assert set([k for k in folder]) == set(["foo", "bar"])
     assert set(folder.keys()) == set(["foo", "bar"])
-    assert set(folder.items()) == set([("foo", o), ("bar",o)])
+    assert set(folder.items()) == set([("foo", o), ("bar", o)])
     assert list(folder.values()) == [o, o]
 
     folder["spam"] = 1
     del folder["bar"]
     assert set([k for k in folder]) == set(["foo", "spam"])
     assert set(folder.keys()) == set(["foo", "spam"])
-    assert set(folder.items()) == set([("foo", o), ("spam",1)])
+    assert set(folder.items()) == set([("foo", o), ("spam", 1)])
     assert set(folder.values()) == set([o, 1])

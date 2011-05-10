@@ -8,7 +8,6 @@ import transaction
 from cromlech.zodb import components
 
 
-
 class IDummyUtil(Interface):
     """dummy utility"""
 
@@ -21,7 +20,6 @@ class GlobalDummyUtil(object):
 
     def callme(self):
         return "Globally, yes"
-
 
 
 class PeculiarDummyUtil(object):

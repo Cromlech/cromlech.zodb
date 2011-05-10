@@ -19,9 +19,9 @@ class ZodbSite(object):
     def __enter__(self):
         root = self.environ['zodb.connection'].root()
         site = root.get(self.name)
-        alsoProvides(site, IPublicationRoot)
         if site is None:
             raise RuntimeError("Site %r doesn't exist" % self.name)
+        alsoProvides(site, IPublicationRoot)
         return site
 
     def __exit__(self, type, value, traceback):

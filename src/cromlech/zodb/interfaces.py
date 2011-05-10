@@ -8,6 +8,6 @@ class ILocalSiteManager(zope.component.interfaces.IComponents):
     it contains before using a context-based lookup to find another site
     manager to delegate to.  If no other site manager is found they defer to
     the global site manager which contains file based utilities and adapters.
-    
+
     Note : taken from zope.site
     """
