@@ -1,8 +1,13 @@
 Changelog
 =========
 
+0.1a2 (2011-08-24)
+------------------
+
+- Removed unneeded transaction and print in the ZODB init.
+
 0.1a1
--------------------
+-----
 
 - Initial release
 - components to replace ``zope.site``
