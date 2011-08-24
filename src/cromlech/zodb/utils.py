@@ -1,9 +1,7 @@
 #!/usr/bin/python
 
-import transaction
 from pkg_resources import iter_entry_points
 from zope.component.interfaces import ISite
-
 from components import LocalSiteManager
 
 
@@ -21,12 +19,11 @@ def initialize_applications(db):
     conn = db.open()
     root = conn.root()
     apps = list_applications()
-    with transaction:
-        for name, factory in apps.items():
-            if not name in root:
-                application = root[name] = factory()
-                if not ISite.providedBy(application):
-                    site_manager = LocalSiteManager(application)
-
-                print "initialized %r" % name
+    
+    for name, factory in apps.items():
+        if not name in root:
+            application = root[name] = factory()
+            if not ISite.providedBy(application):
+                site_manager = LocalSiteManager(application)
+                
     conn.close()
