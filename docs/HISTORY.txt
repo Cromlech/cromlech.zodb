@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.1a3 (2011-08-24)
+------------------
+
+- Restaured transaction with the proper syntax for python2.7+.
+
 0.1a2 (2011-08-24)
 ------------------
 
