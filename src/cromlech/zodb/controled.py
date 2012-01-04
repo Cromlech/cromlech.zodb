@@ -4,6 +4,23 @@ from cromlech.io.interfaces import IPublicationRoot
 from zope.interface import alsoProvides
 
 
+class Connection(object):
+
+    def __init__(self, key, db):
+        self.key = key
+        self.conn = db.open()       
+
+    def __enter__(self, environ, start_response, app):
+        environ[self.key] = self.conn
+        result = app(environ, start_response)
+        del environ[self.key]
+        return result
+
+    def __exit__(self, type, value, traceback):
+        self.conn.close()
+
+
+
 class ZodbSite(object):
     """Controled execution, using a ZODB-dwelling object as
     a publication root. This relies on `zc.zodbwsgi` to extract
@@ -11,8 +28,6 @@ class ZodbSite(object):
     """
 
     def __init__(self, environ, name):
-        """
-        """
         self.environ = environ
         self.name = name
 
