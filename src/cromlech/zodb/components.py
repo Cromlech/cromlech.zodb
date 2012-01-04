@@ -1,13 +1,16 @@
-from BTrees.OOBTree import OOBTree
-from BTrees.Length import Length
-from persistent import Persistent
-from zope.cachedescriptors.property import Lazy
+# -*- coding: utf-8 -*-
+
 import zope.component.interfaces
 import zope.component.persistentregistry
 import zope.interface
 import zope.location
 
-import interfaces
+from BTrees.Length import Length
+from BTrees.OOBTree import OOBTree
+from persistent import Persistent
+from zope.cachedescriptors.property import Lazy
+
+from cromlech.zodb import interfaces
 
 
 class PossibleSite(object):
@@ -23,7 +26,7 @@ class PossibleSite(object):
             return self._sm
         else:
             raise zope.component.interfaces.ComponentLookupError(
-                                                    'no site manager defined')
+                'no site manager defined')
 
     def setSiteManager(self, sm):
         if zope.component.interfaces.ISite.providedBy(self):
@@ -110,12 +113,10 @@ class PersitentOOBTree(Persistent):
 
 class LocalSiteManager(
     PersitentOOBTree,
-    zope.component.persistentregistry.PersistentComponents,
-    ):
+    zope.component.persistentregistry.PersistentComponents):
     """Local Site Manager implementation for zodb
-
-    Use this to have an application with eg. local utility"""
-
+    Use this to have an application with eg. local utility.
+    """
     zope.interface.implements(interfaces.ILocalSiteManager)
 
     subs = ()

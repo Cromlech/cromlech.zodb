@@ -2,7 +2,7 @@
 
 import transaction
 import ZODB.config
-from crommlech.zodb.components import LocalSiteManager
+from cromlech.zodb.components import LocalSiteManager
 from pkg_resources import iter_entry_points
 from zope.component.interfaces import ISite
 

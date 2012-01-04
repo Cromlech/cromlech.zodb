@@ -8,7 +8,6 @@ version = '0.2a1'
 
 install_requires = [
     'setuptools',
-    'cromlech.io',
     'transaction',
     'zope.interface',
     'zope.cachedescriptors',
@@ -19,6 +18,7 @@ install_requires = [
 
 tests_require = [
     'pytest',
+    'cromlech.io',
     ]
 
 setup(name='cromlech.zodb',
