@@ -1,1 +1,1 @@
-from cromlech.zodb.controled import ZodbSite
+from cromlech.zodb.controled import Connection, ZODBSiteManager

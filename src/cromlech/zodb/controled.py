@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import transaction
 from cromlech.io.interfaces import IPublicationRoot
 from zope.interface import alsoProvides
 
@@ -9,6 +10,7 @@ def transaction_wrapper(app, key):
         tm = environ[key] = transaction.TransactionManager()
         try:
             try:
+                print "running the transaction aware app"
                 result = app(environ, start_response)
             except:
                 tm.get().abort()
@@ -17,7 +19,7 @@ def transaction_wrapper(app, key):
                 tm.get().commit()
             return result
         finally:
-            del environ[transaction_key]
+            del environ[key]
     return transaction_aware_app
 
 
@@ -53,5 +55,5 @@ class ZODBSiteManager(object):
         return site
 
     def __call__(self, environ):
-        conn = environ[key]
+        conn = environ[self.key]
         return self.get_from_conn(conn)
