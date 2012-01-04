@@ -1,9 +1,26 @@
 #!/usr/bin/python
 
 import transaction
+import ZODB.config
+from crommlech.zodb.components import LocalSiteManager
 from pkg_resources import iter_entry_points
 from zope.component.interfaces import ISite
-from components import LocalSiteManager
+
+
+def eval_loader(expr):
+    module, expr = expr.split(':', 1)
+    if module:
+        d = __import__(module, {}, {}, ['*']).__dict__
+    else:
+        d = {}
+    return eval(expr, d)
+
+
+def init_db(configuration, initializer=None):
+    db = ZODB.config.databaseFromString(configuration)
+    if initializer is not None:
+        initializer(db)
+    return db
 
 
 def list_applications():

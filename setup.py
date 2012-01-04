@@ -1,7 +1,10 @@
-from setuptools import setup, find_packages
-import os
+# -*- coding: utf-8 -*-
 
-version = '0.1a3'
+import os
+from setuptools import setup, find_packages
+
+
+version = '0.2a1'
 
 install_requires = [
     'setuptools',
@@ -44,5 +47,7 @@ setup(name='cromlech.zodb',
       extras_require = {'test': tests_require},
       entry_points="""
       # -*- Entry points: -*-
+      [paste.filter_app_factory]
+      zodb = cromlech.zodb.middleware:zodb_filter_middleware
       """,
       )
