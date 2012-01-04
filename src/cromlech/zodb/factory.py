@@ -8,23 +8,6 @@ import ZODB.config
 from cromlech.zodb.controled import Connection
 
 
-def transaction_wrapper(app, key):
-    def transaction_aware_app(environ, start_response):
-        tm = environ[key] = transaction.TransactionManager()
-        try:
-            try:
-                result = app(environ, start_response)
-            except:
-                tm.get().abort()
-                raise
-            else:
-                tm.get().commit()
-            return result
-        finally:
-            del environ[transaction_key]
-    return app
-
-
 def eval_loader(expr):
     module, expr = expr.split(':', 1)
     if module:

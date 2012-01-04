@@ -4,11 +4,28 @@ from cromlech.io.interfaces import IPublicationRoot
 from zope.interface import alsoProvides
 
 
+def transaction_wrapper(app, key):
+    def transaction_aware_app(environ, start_response):
+        tm = environ[key] = transaction.TransactionManager()
+        try:
+            try:
+                result = app(environ, start_response)
+            except:
+                tm.get().abort()
+                raise
+            else:
+                tm.get().commit()
+            return result
+        finally:
+            del environ[transaction_key]
+    return transaction_aware_app
+
+
 class Connection(object):
 
     def __init__(self, key, db):
         self.key = key
-        self.conn = db.open()       
+        self.conn = db.open()
 
     def __enter__(self):
         def wrapper(environ, start_response, app):
@@ -22,30 +39,19 @@ class Connection(object):
         self.conn.close()
 
 
-class ZodbSite(object):
-    """Controled execution, using a ZODB-dwelling object as
-    a publication root. This relies on `zc.zodbwsgi` to extract
-    the connection pointer from the WSGI environ.
-    """
+class ZODBSiteManager(object):
 
-    def __init__(self, environ, name):
-        self.environ = environ
+    def __init__(self, key, name):
         self.name = name
+        self.key = key
 
-    def __enter__(self):
-        root = self.environ['zodb.connection'].root()
+    def get_from_conn(self, conn):
+        root = conn.root()
         site = root.get(self.name)
         if site is None:
-            self.environ['zodb.connection'].transaction_manager.get().abort()
-            self.environ['zodb.connection'].close()
-            raise RuntimeError("Site %r doesn't exist" % self.name)
-        alsoProvides(site, IPublicationRoot)
+            raise RuntimeError("Site %s doesn't exist in the current ZODB.")
         return site
 
-    def __exit__(self, type, value, traceback):
-        conn = self.environ['zodb.connection']
-        if type is None:
-            conn.transaction_manager.get().commit()
-        else:
-            conn.transaction_manager.get().abort()
-        conn.close()
+    def __call__(self, environ):
+        conn = environ[key]
+        return self.get_from_conn(conn)
