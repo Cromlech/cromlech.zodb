@@ -5,7 +5,7 @@ Copyright (c) Zope Foundation and Contributors.
 """
 import transaction
 import ZODB.config
-from cromlech.zodb.controled import Connection
+from cromlech.zodb.controled import Connection, transaction_wrapper
 
 
 def eval_loader(expr):
