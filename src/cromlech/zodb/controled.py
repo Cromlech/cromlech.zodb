@@ -10,15 +10,16 @@ class Connection(object):
         self.key = key
         self.conn = db.open()       
 
-    def __enter__(self, environ, start_response, app):
-        environ[self.key] = self.conn
-        result = app(environ, start_response)
-        del environ[self.key]
-        return result
+    def __enter__(self):
+        def wrapper(environ, start_response, app):
+            environ[self.key] = self.conn
+            result = app(environ, start_response)
+            del environ[self.key]
+            return result
+        return wrapper
 
     def __exit__(self, type, value, traceback):
         self.conn.close()
-
 
 
 class ZodbSite(object):

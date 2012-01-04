@@ -50,11 +50,9 @@ def zodb_app(app, db, key, transaction, transaction_key='transaction.manager'):
     #if retry:
     #    app = retry_on_fail(app, retry)
 
-    connection = Connection(key, db)
-
     def zodb_app(environ, start_response):
-        with connection(environ, start_response, app) as response:
-            return response
+        with Connection(key, db) as connect:
+            return connect(environ, start_response, app)
 
     return zodb_app
 
