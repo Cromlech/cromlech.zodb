@@ -25,12 +25,6 @@ class Connection(object):
         self.db = db
         self.connection_key = connection_key
 
-    @staticmethod
-    def clean_up(environ, *keys):
-        for key in keys:
-            if key is not None and key in environ:
-                del environ[key]
-
     def __enter__(self):
         def wrapper(app, environ, start_response):
             conn = environ[self.connection_key] = self.db.open()
@@ -38,7 +32,7 @@ class Connection(object):
             try:
                 return app(environ, start_response)
             finally:
-                self.clean_up(environ, self.connection_key)
+                del environ[self.connection_key]
         return wrapper
 
     def __exit__(self, type, value, traceback):
@@ -62,8 +56,8 @@ class ConnectionWithTransaction(Connection):
             try:
                 return app(environ, start_response)
             finally:
-                self.clean_up(
-                    environ, self.connection_key, self.transaction_key)
+                del environ[self.transaction_key]
+                del environ[self.connection_key]
         return wrapper
 
 
