@@ -1,15 +1,25 @@
 Changelog
 =========
 
+0.2a1 (2012-01-10)
+------------------
+
+- No longer rely on ``zc.zodbwsgi`` to provide a connection. Instead, we
+  provide a set of methods and controllers to handle the connection,
+  including transactions or not.
+
+
 0.1a3 (2011-08-24)
 ------------------
 
 - Restaured transaction with the proper syntax for python2.7+.
 
+
 0.1a2 (2011-08-24)
 ------------------
 
 - Removed unneeded transaction and print in the ZODB init.
+
 
 0.1a1
 -----
