@@ -27,8 +27,7 @@ class Connection(object):
 
     def __enter__(self):
         def wrapper(app, environ, start_response):
-            conn = environ[self.connection_key] = self.db.open()
-            environ[self.connection_key] = conn
+            self.conn = environ[self.connection_key] = self.db.open()
             try:
                 return app(environ, start_response)
             finally:
@@ -51,7 +50,7 @@ class ConnectionWithTransaction(Connection):
     def __enter__(self):
         def wrapper(app, environ, start_response):
             tm = environ[self.transaction_key] = self.tm_factory()
-            conn = environ[self.connection_key] = self.db.open(tm)
+            self.conn = environ[self.connection_key] = self.db.open(tm)
             app = transaction_wrapper(app, tm)
             try:
                 return app(environ, start_response)
