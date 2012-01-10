@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from cromlech.zodb.utils import init_db, eval_loader
-from cromlech.zodb.controled import Connection, ConnectionWithTransaction
+from cromlech.zodb.controlled import Connection, ConnectionWithTransaction
 
 
 def zodb_app_factory(app, db, key,
