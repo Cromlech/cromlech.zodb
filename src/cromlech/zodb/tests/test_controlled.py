@@ -7,7 +7,6 @@ from ZODB import DB
 from ZODB.DemoStorage import DemoStorage
 from persistent import Persistent
 
-from cromlech.io.interfaces import IPublicationRoot
 from cromlech.zodb.components import PossibleSite
 from cromlech.zodb.controlled import ZODBSiteWithTransaction
 

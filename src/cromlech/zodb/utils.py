@@ -1,10 +1,8 @@
 #!/usr/bin/python
 
-import transaction
 import ZODB.config
-from cromlech.zodb.components import LocalSiteManager
+from transaction import manager as transaction_manager
 from pkg_resources import iter_entry_points
-from zope.component.interfaces import ISite
 
 
 def eval_loader(expr):
@@ -35,15 +33,14 @@ def list_applications():
 
 def initialize_applications(db):
     conn = db.open()
-    root = conn.root()
-    apps = list_applications()
-    transaction.begin()
 
-    for name, factory in apps.items():
-        if not name in root:
-            application = root[name] = factory()
-            if not ISite.providedBy(application):
-                site_manager = LocalSiteManager(application)
-
-    transaction.commit()
-    conn.close()
+    try:
+        root = conn.root()
+        apps = list_applications()
+        
+        with transaction_manager:
+            for name, factory in apps.items():
+                if not name in root:
+                    root[name] = factory()
+    finally:
+        conn.close()

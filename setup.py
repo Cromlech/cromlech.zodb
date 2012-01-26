@@ -4,7 +4,7 @@ import os
 from setuptools import setup, find_packages
 
 
-version = '0.2a1'
+version = '0.2'
 
 install_requires = [
     'setuptools',
@@ -13,12 +13,11 @@ install_requires = [
     'zope.cachedescriptors',
     'zope.component',
     'zope.location',
-    'ZODB3', # included Btrees
+    'ZODB3', # included Btrees and persistent.
     ]
 
 tests_require = [
     'pytest',
-    'cromlech.io',
     ]
 
 setup(name='cromlech.zodb',
