@@ -1,13 +1,15 @@
+# -*- coding: utf-8 -*-
+
 import os.path
 import pkg_resources
-from persistent import Persistent
+import pytest
+
 from ZODB import DB
 from ZODB.DemoStorage import DemoStorage
-
 from cromlech.zodb import utils
 from cromlech.zodb.components import PossibleSite
+from persistent import Persistent
 
-import pytest
 
 testDataPath = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data')
 

@@ -88,7 +88,7 @@ class ZODBSiteWithTransaction(ZODBSiteManager):
     connection = None
     transaction_manager = None
     tm_factory = transaction.TransactionManager
-    
+
     def __init__(self, db, key, name):
         self.db = db
         self.key = key

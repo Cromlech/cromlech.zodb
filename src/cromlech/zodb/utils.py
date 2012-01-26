@@ -37,7 +37,7 @@ def initialize_applications(db):
     try:
         root = conn.root()
         apps = list_applications()
-        
+
         with transaction_manager:
             for name, factory in apps.items():
                 if not name in root:
