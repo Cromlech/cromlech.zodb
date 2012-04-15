@@ -6,7 +6,6 @@ import transaction
 def transaction_wrapper(app, transaction_manager):
     def transaction_aware_app(environ, start_response):
         try:
-            print "running the transaction aware app"
             result = app(environ, start_response)
         except:
             transaction_manager.get().abort()
