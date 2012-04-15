@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.2.2 (2012-04-15)
+------------------
+
+- Removed unfortunate print in the transaction wrapper.
+
+
 0.2.1 (2012-01-27)
 ------------------
 
