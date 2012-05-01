@@ -1,112 +1,56 @@
 # -*- coding: utf-8 -*-
+from zope.component.hooks import setSite
 
-import transaction
 
+def close(conn):
+    """This is the default callback() to close a connection
 
-def transaction_wrapper(app, transaction_manager):
-    def transaction_aware_app(environ, start_response):
-        try:
-            result = app(environ, start_response)
-        except:
-            transaction_manager.get().abort()
-            raise
-        else:
-            transaction_manager.get().commit()
-        return result
-    return transaction_aware_app
+    it just close it !
+    """
+    if conn is not None:
+        conn.close()
 
 
 class Connection(object):
 
     conn = None
 
-    def __init__(self, db, connection_key):
+    def __init__(self, db, transaction_manager=None, close=close):
+        """
+        :name: the name of the zodb database
+        :param envkey: is an optional key
+            where the zodb connection will be pushed
+        :param transaction_manager: the transaction manager or None
+        :param close: an optionnal callback responsible to close
+            the connexion.
+        """
         self.db = db
-        self.connection_key = connection_key
+        self.transaction_manager = transaction_manager
+        self.close = close
 
     def __enter__(self):
-        def wrapper(app, environ, start_response):
-            self.conn = environ[self.connection_key] = self.db.open()
-            try:
-                return app(environ, start_response)
-            finally:
-                del environ[self.connection_key]
-        return wrapper
+        self.conn = self.db.open(self.transaction_manager)
+        return self.conn
 
     def __exit__(self, type, value, traceback):
-        if self.conn is not None:
-            self.conn.close()
+        self.close(self.conn)
 
 
-class ConnectionWithTransaction(Connection):
+class Site(object):
+    """A context manager to work in a site
 
-    tm_factory = transaction.TransactionManager
-
-    def __init__(self, db, connection_key, transaction_key):
-        Connection.__init__(self, db, connection_key)
-        self.transaction_key = transaction_key
-
-    def __enter__(self):
-        def wrapper(app, environ, start_response):
-            tm = environ[self.transaction_key] = self.tm_factory()
-            self.conn = environ[self.connection_key] = self.db.open(tm)
-            app = transaction_wrapper(app, tm)
-            try:
-                return app(environ, start_response)
-            finally:
-                del environ[self.transaction_key]
-                del environ[self.connection_key]
-        return wrapper
-
-
-class ZODBSiteManager(object):
-    """This simple factory is a way to retrieve a site from the DB conn.
-    """
-    def __init__(self, key, name):
-        self.name = name
-        self.key = key
-
-    def get_from_conn(self, conn):
-        root = conn.root()
-        site = root.get(self.name)
-        if site is None:
-            raise RuntimeError("Site %s doesn't exist in the current ZODB.")
-        return site
-
-    def __call__(self, environ):
-        conn = environ[self.key]
-        return self.get_from_conn(conn)
-
-
-class ZODBSiteWithTransaction(ZODBSiteManager):
-    """This execution controller is mainly used outside of the context
-    of a wsgi application. It assumes that you don't have a current
-    active transaction. The controller returns a factory, using the environ.
+    This simply setSite àla zope
+    (see :py:func:zope.component.hooks.setSite)
     """
 
-    connection = None
-    transaction_manager = None
-    tm_factory = transaction.TransactionManager
-
-    def __init__(self, db, key, name):
-        self.db = db
-        self.key = key
-        self.name = name
+    def __init__(self, site):
+        """
+        :ptype site: a :py:func:zope.component.interfaces.ISite
+        """
+        self.site = site
 
     def __enter__(self):
-        def transaction_site(environ):
-            self.transaction_manager = environ[self.key] = self.tm_factory()
-            self.connection = self.db.open(self.transaction_manager)
-            site = self.get_from_conn(self.connection)
-            self.transaction_manager.begin()
-            return site
-        return transaction_site
+        setSite(site)
 
-    def __exit__(self, type, value, traceback):
-        if self.transaction_manager is not None:
-            if value:
-                self.transaction_manager.get().abort()
-            else:
-                self.transaction_manager.get().commit()
-        if self.connection is not None:
-            self.connection.close()
+    def __exit__(self):
+        setSite(None)

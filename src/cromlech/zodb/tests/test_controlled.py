@@ -8,7 +8,7 @@ from ZODB.DemoStorage import DemoStorage
 from persistent import Persistent
 
 from cromlech.zodb.components import PossibleSite
-from cromlech.zodb.controlled import ZODBSiteWithTransaction
+from cromlech.zodb.controlled import Connection, Site
 
 
 class MyApp(PossibleSite, Persistent):
@@ -36,12 +36,34 @@ def test_context_manager():
     make_app(db)
     environ = {}
 
-    with ZODBSiteWithTransaction(db, 'zodb.connection', 'myapp') as manager:
-        site = manager(environ)
-        site.foo = 'bar'
-        assert site() == "running !"
+    tm = transaction.TransactionManager()
 
-    assert db.open().root()['myapp'].foo == 'bar'  # transaction was commited
+    with Connection(db, transaction_manager=tm) as conn:
+        with tm as transaction_:
+            conn.root()['foo'] = 'bar'
+
+    assert db.open().root()['foo'] == 'bar'  # transaction was commited
+
+
+def test_context_manager_connection_inside():
+    db = DB(DemoStorage())
+    make_app(db)
+    environ = {}
+
+    tm = transaction.TransactionManager()
+
+    # we need to close after commit
+    def close(conn):
+        def close_hook(success, conn):
+            #conn.close()
+            pass
+        tm.get().addAfterCommitHook(close_hook, conn)
+
+    with tm as transaction_:
+        with Connection(db, transaction_manager=tm, close=close) as conn:
+            conn.root()['foo'] = 'bar'
+
+    assert db.open().root()['foo'] == 'bar'  # transaction was commited
 
 
 def test_context_manager_aborting():
@@ -49,13 +71,13 @@ def test_context_manager_aborting():
     make_app(db)
     environ = {}
 
-    with pytest.raises(Exception):
-        with ZODBSiteWithTransaction(db, 'zodb.connection', 'myapp') as manager:
-            site = manager(environ)
-            site.foo = 'bar'
-            site.dofail()
+    tm = transaction.TransactionManager()
 
-    assert db.open().root()['myapp'].foo == 'spam'  # transaction was aborted
+    with Connection(db, transaction_manager=tm) as conn:
+        with tm as transaction_:
+            conn.root()['foo'] = 'bar'
+            transaction_.abort()
+    assert db.open().root().get('foo') is None  # transaction was aborted
 
 
 def test_no_application():
