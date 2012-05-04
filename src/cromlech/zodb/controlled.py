@@ -1,18 +1,24 @@
 # -*- coding: utf-8 -*-
+
 from zope.component.hooks import setSite
 
 
 def close(conn):
-    """This is the default callback() to close a connection
-
-    it just close it !
+    """This is the default callback to close a connection.
     """
     if conn is not None:
         conn.close()
 
 
-class Connection(object):
+def deffered_close(conn):
+    pass
 
+
+class Connection(object):
+    """The Connection context manager does open and close the database.
+    The connection is provided with a transaction manager and is assured
+    to be closed by the given `close` callback function.
+    """
     conn = None
 
     def __init__(self, db, transaction_manager=None, close=close):
