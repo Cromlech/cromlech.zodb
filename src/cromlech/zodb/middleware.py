@@ -1,26 +1,34 @@
 # -*- coding: utf-8 -*-
+import transaction
 
 from cromlech.zodb.utils import init_db, eval_loader
-from cromlech.zodb.controlled import Connection, ConnectionWithTransaction
+from cromlech.zodb.controlled import Connection
 
 
 _marker = object()
 
+
+def environ_transaction_manager(name, tm_factory=lambda: transaction.manager):
+    def from_environ(environ):
+        tm = environ.setdefault(name, tm_factory())
+    return from_environ
+
+def default_transaction_manager_factory(environ):
+    return transaction.manager
 
 class ZODBApp(object):
     """
     A middleware to open a ZODB connection and set it in environnement
     """
 
-    tm_factory = transaction.TransactionManager
     """
     factory used to create a transaction manager if environ does
     not contain one. defaults to :py:class:transaction.TransactionManager
     """
 
-    def __init__(app, db, key,
-                 use_transaction,
-                 transaction_manager_key='transaction.manager'):
+    def __init__(self, app, db, key,
+                 manage_transaction=True,
+                 transaction_manager_factory=None):
         """
         :param app: the wrapped application
         :param db: the ZODB object
@@ -32,41 +40,26 @@ class ZODBApp(object):
         self.app = app
         self.db = db
         self.envkey = key
-        self.use_transaction = use_transaction
-        self.transaction_key = transaction_key
+        self.manage_transaction = manage_transaction
+        self.tm_factory = transaction_manager_factory
 
-    def run_app(self, app, environ, start_response):
-        response = conn(app, environ, start_response)
-        for chunk in response:
-            yield chunk
-        close = getattr(response, 'close', None)
-        if close is not None:
-            close()
-
-    def __call__(environ, start_response):
-        if self.transaction:
-            try:
-                transaction_manager = environ.[transaction_key]
-            except KeyError:
-                transaction_manager = environ[transaction_key] = (
-                    self.tm_factory())
-        else:
-            transaction_manager = None
+    def __call__(self, environ, start_response):
+        self.transaction_manager_factory(environ)
 
         with Connection(self.db,
                         transaction_manager=transaction_manager) as conn:
-            environ[key] = conn
+            environ[self.envkey] = conn
             try:
-                if transaction_manager is not None:
-                    with transaction_manager:
-                        for chunk in self.run_app(app, environ, start_response):
-                            yield chunk
-                else:
-                    for chunk in self.run_app(app, environ, start_response):
+                with transaction_manager:
+                    response = self.app(environ, start_response)
+                    for chunk in response:
                         yield chunk
+                    close = getattr(response, 'close', None)
+                    if close is not None:
+                        close()
             except:
-                del environ[key]
-
+                del environ[self.envkey]
+        
 
 def zodb_filter_middleware(
     app,
@@ -86,6 +79,7 @@ def zodb_filter_middleware(
     :param initializer: an optional ZODB initializer
       module.dotted.name:callable,
       eg: 'cromlech.zodb.utils:initialize_applications'
+    :param transaction: does the middelware needs to manage the transaction
 
     for other params see :py:meth:ZODBApp.__init__
     """
@@ -99,4 +93,5 @@ def zodb_filter_middleware(
     return ZODBApp(
         app, db, key,
         transaction.lower() in ('true', 'y', 'yes'),
-        transaction_key=transaction_key)
+        transaction_key=transaction_key,
+        transaction_manager_factory=from_environ(transaction_key))
