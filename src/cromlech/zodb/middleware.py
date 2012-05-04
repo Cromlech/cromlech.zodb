@@ -1,47 +1,42 @@
 # -*- coding: utf-8 -*-
-import transaction
 
 import transaction
 from cromlech.zodb.utils import init_db, eval_loader
 from cromlech.zodb.controlled import Connection
 
 
-def get_transaction_manager_factory(key):
-    def extract_from_environ(environ):
-        try:
-            tm = environ[key]
-        except KeyError:
-            tm = environ[key] = transaction.manager
-        return tm
-    return extract_from_environ
-
-
-def get_default_transaction_manager(environ):
-    return transaction.manager
+def environ_transaction_manager(environ, key):
+    try:
+        tm = environ[key]
+    except KeyError:
+        tm = environ[key] = transaction.manager
+    return tm
 
 
 class ZODBApp(object):
     """A middleware to open a ZODB connection and set it in environment.
     """
 
-    def __init__(self, app, db, key,
-                 transaction_manager_factory=get_default_transaction_manager):
+    def __init__(self, app, db, key, transaction_key='transaction.manager',
+                 transaction_manager_factory=environ_transaction_manager):
         """
         :param app: the wrapped application
         :param db: the ZODB object
-        :param transaction_manager_key: the key where to find or store
-            the transaction manager
+        :param transaction_key: a key to find or store the transaction manager
+        :param transaction_manager_factory: a callable function that takes
+        the environ and transaction_key and returns a transaction manager.
         """
         self.app = app
         self.db = db
         self.key = key
+        self.transaction_key = transaction_key
         self.transaction_manager_factory = transaction_manager_factory 
 
     def __call__(self, environ, start_response):
-        tm = self.transaction_manager_factory(environ)
+        tm = self.transaction_manager_factory(environ, self.transaction_key)
 
         with Connection(self.db, transaction_manager=tm) as conn:
-            environ[key] = conn
+            environ[self.key] = conn
             try:
                 with tm:
                     response = self.app(environ, start_response)
@@ -51,7 +46,7 @@ class ZODBApp(object):
                         if close is not None:
                             close()
             finally:
-                del environ[key]
+                del environ[self.key]
 
 
 def zodb_filter_middleware(
@@ -83,6 +78,5 @@ def zodb_filter_middleware(
     db = init_db(configuration, initializer)
 
     return ZODBApp(
-        app, db, key,
-        transaction_manager_factory=get_transaction_manager_factory(
-            transaction_key))
+        app, db, key, transaction_key,
+        transaction_manager_factory=environ_transaction_manager)

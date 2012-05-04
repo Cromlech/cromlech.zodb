@@ -11,14 +11,14 @@ def test_middleware_simple():
     """
     """
     def simple_app(environ, start_response):
-        assert (environ['transaction_manager'] ==
-                transaction.transaction_manager)
-        assert environ['zodb'].root()['myapp'] == 'running !'
-        start_response('200 OK', {})
-        return [environ['zodb'].root()['myapp']]
+        assert (environ['transaction.manager'] ==
+                transaction.manager)
+        assert environ['zodb'].root()['myapp']() == 'running !'
+        start_response('200 OK', [('Content-Type', 'plain/text')])
+        return [environ['zodb'].root()['myapp']()]
 
     db = DB(DemoStorage())
     make_app(db)
     app = TestApp(ZODBApp(simple_app, db, 'zodb'))
 
-    assert app.get('/') == 'running !'
+    assert app.get('/').body == 'running !'

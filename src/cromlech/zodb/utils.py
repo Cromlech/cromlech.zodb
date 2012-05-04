@@ -6,7 +6,9 @@ from pkg_resources import iter_entry_points
 from transaction import manager as transaction_manager
 from zope.component.interfaces import ISite, IPossibleSite
 
+
 marker = object()
+
 
 def eval_loader(expr):
     """load  a class / function
@@ -29,7 +31,6 @@ def eval_loader(expr):
                     (expr, elt, modname))
     else:
         raise RuntimeError("Bad specification %s: no module name." % expr)
-        
 
 
 def init_db(configuration, initializer=None):
