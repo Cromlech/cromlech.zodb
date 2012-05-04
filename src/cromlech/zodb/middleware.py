@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
+import transaction
 
 import transaction
 from cromlech.zodb.utils import init_db, eval_loader
-from cromlech.zodb.controlled import Connection, ConnectionWithTransaction
+from cromlech.zodb.controlled import Connection
 
 
 def get_transaction_manager_factory(key):
-    """
-    """
     def extract_from_environ(environ):
         try:
             tm = environ[key]
@@ -17,32 +16,35 @@ def get_transaction_manager_factory(key):
     return extract_from_environ
 
 
+def get_default_transaction_manager(environ):
+    return transaction.manager
+
+
 class ZODBApp(object):
     """A middleware to open a ZODB connection and set it in environment.
     """
 
-    def __init__(app, db, key, transaction_manager_factory):
+    def __init__(self, app, db, key,
+                 transaction_manager_factory=get_default_transaction_manager):
         """
         :param app: the wrapped application
         :param db: the ZODB object
-        :param use_transaction: if True wrap in a transaction
         :param transaction_manager_key: the key where to find or store
             the transaction manager
         """
         self.app = app
         self.db = db
         self.key = key
-        self.use_transaction = use_transaction
         self.transaction_manager_factory = transaction_manager_factory 
 
-    def __call__(environ, start_response):
+    def __call__(self, environ, start_response):
         tm = self.transaction_manager_factory(environ)
 
         with Connection(self.db, transaction_manager=tm) as conn:
             environ[key] = conn
             try:
                 with tm:
-                    response = app(environ, start_response)
+                    response = self.app(environ, start_response)
                     for chunk in response:
                         yield chunk
                         close = getattr(response, 'close', None)
@@ -69,6 +71,7 @@ def zodb_filter_middleware(
     :param initializer: an optional ZODB initializer
       module.dotted.name:callable,
       eg: 'cromlech.zodb.utils:initialize_applications'
+    :param transaction: does the middelware needs to manage the transaction
 
     for other params see :py:meth:ZODBApp.__init__
     """
@@ -83,4 +86,3 @@ def zodb_filter_middleware(
         app, db, key,
         transaction_manager_factory=get_transaction_manager_factory(
             transaction_key))
-

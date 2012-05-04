@@ -9,20 +9,24 @@ from zope.component.interfaces import ISite, IPossibleSite
 marker = object()
 
 def eval_loader(expr):
-    """load  a class / function, and call it if it is callable.
+    """load  a class / function
 
     :param expr: dotted name of the module ':' name of the class / function
+    :raises RuntimeError: if expr is not a valid expression
+    :raises ImportError: if module or object not found
     """
     modname, elt = expr.split(':', 1)
     if modname:
-        val = __import__(modname, {}, {}, ['*']).get(elt, marker)
-        if val is marker:
-            raise RuntimeError(
-                "Bad specification %s: no item name %s in %s." %
-                (expr, elt, modname))
-        if callable(val):
-            val = val()
-        return val
+        try:
+            module = __import__(modname, {}, {}, ['*'])
+            val = getattr(module, elt, marker)
+            if val is marker:
+                raise ImportError('')
+            return val
+        except ImportError:
+            raise ImportError(
+                    "Bad specification %s: no item name %s in %s." %
+                    (expr, elt, modname))
     else:
         raise RuntimeError("Bad specification %s: no module name." % expr)
         
@@ -30,7 +34,7 @@ def eval_loader(expr):
 
 def init_db(configuration, initializer=None):
     """
-    This bootstrap the ZODB listed in configuration
+    This bootstrap the ZODB using initializer
 
     :param configuration: The zodb configuration as written
         in zope.conf files
@@ -39,6 +43,8 @@ def init_db(configuration, initializer=None):
     :param initializer: an optional method
         which will be passed the ZODB as parameter
         in order to eg. create basic initial objects if they do not exists.
+
+    :raises ConfigurationSyntaxError: on bad configuration string
 
     .. seealso::
        :py:fun:initialize_applications (sample initializer)
@@ -56,12 +62,13 @@ def get_site(conn, name):
 
     :param conn: the ZODB connection
     :param name: name of the site
-    :raises RuntimeError: if the site does not exist
+    :raises KeyError: the site does not exist
+    :raises TypeError: the object is not an ISite
     """
     root = conn.root()
-    site = root.get(self.name)
-    if site is None:
-        raise RuntimeError("Site %s doesn't exist in the current ZODB." % name)
+    site = root[name]  
+    if not ISite.providedBy(site):
+        raise TypeError("Site %r does not exist in the current ZODB." % name)
     return site
 
 
@@ -78,7 +85,8 @@ def list_applications():
     return apps
 
 
-def initialize_applications(db):
+def initialize_applications(db, list_applications=list_applications,
+                            transaction_manager=transaction_manager):
     """
     This utility setup applications in a database.
 
@@ -93,6 +101,10 @@ def initialize_applications(db):
     or cook your own.
 
     :param db: the ZODB database
+    :param list_applications: a callable that return a dict of applications
+        factory indexed by their name
+    :param transaction_manager: if not provided
+         use :py:mod:transaction default one
     """
     conn = db.open()
 
