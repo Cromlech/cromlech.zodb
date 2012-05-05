@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import transaction
 
 from ZODB import DB
@@ -11,7 +12,7 @@ from persistent import Persistent
 from cromlech.zodb.components import PossibleSite
 from cromlech.zodb.controlled import Connection, Site
 
-from .testing import DummySite
+from ..testing import DummySite
 
 
 def test_connection_manager_default_transaction():

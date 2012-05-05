@@ -30,7 +30,7 @@ class ZODBApp(object):
         self.db = db
         self.key = key
         self.transaction_key = transaction_key
-        self.transaction_manager_factory = transaction_manager_factory 
+        self.transaction_manager_factory = transaction_manager_factory
 
     def __call__(self, environ, start_response):
         tm = self.transaction_manager_factory(environ, self.transaction_key)

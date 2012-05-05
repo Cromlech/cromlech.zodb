@@ -1,6 +1,16 @@
 Changelog
 =========
 
+0.3 (2012-05-05)
+----------------
+
+- General overhaul of the package, in order to provide better isolated
+  components. For that matter, some of the context managers are now
+  doing less, but they are more reusable.
+
+  This change is *NOT* backward compatible. Update your applications.
+
+
 0.2.2 (2012-04-15)
 ------------------
 

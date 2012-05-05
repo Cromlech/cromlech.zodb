@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from ZODB import DB
 from ZODB.DemoStorage import DemoStorage
 import ZConfig
@@ -6,9 +8,9 @@ from collections import OrderedDict
 
 import pytest
 
-from cromlech.zodb.utils import (
-    eval_loader, init_db, get_site, initialize_applications)
-from .testing import DummySite, MyApp, SimpleApp
+from cromlech.zodb.utils import eval_loader, init_db, get_site
+from cromlech.zodb.utils import initialize_applications
+from ..testing import DummySite, MyApp, SimpleApp
 
 
 def test_eval_loader():

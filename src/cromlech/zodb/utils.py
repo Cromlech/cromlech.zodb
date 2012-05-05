@@ -67,7 +67,7 @@ def get_site(conn, name):
     :raises TypeError: the object is not an ISite
     """
     root = conn.root()
-    site = root[name]  
+    site = root[name]
     if not ISite.providedBy(site):
         raise TypeError("Site %r does not exist in the current ZODB." % name)
     return site

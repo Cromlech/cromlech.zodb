@@ -3,7 +3,7 @@ from webtest import TestApp
 from ZODB import DB
 from ZODB.DemoStorage import DemoStorage
 
-from .testing import make_app
+from ..testing import make_app
 from ..middleware import ZODBApp
 
 

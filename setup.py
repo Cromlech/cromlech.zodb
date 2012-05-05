@@ -4,7 +4,7 @@ import os
 from setuptools import setup, find_packages
 
 
-version = '0.2.2'
+version = '0.3'
 
 install_requires = [
     'setuptools',
@@ -13,7 +13,7 @@ install_requires = [
     'zope.cachedescriptors',
     'zope.component',
     'zope.location',
-    'ZODB3', # included Btrees and persistent.
+    'ZODB3',  # included Btrees and persistent.
     ]
 
 tests_require = [
@@ -27,7 +27,8 @@ setup(name='cromlech.zodb',
                   "for application using the ZODB",
       long_description=open("README.txt").read() + "\n" +
                        open(os.path.join("src", 'cromlech', 'zodb',
-                                         "test_base.txt")).read() + "\n" +
+                                         "tests", "test_base.txt")
+                            ).read() + "\n" +
                        open(os.path.join("docs", "HISTORY.txt")).read(),
       classifiers=[
         "Programming Language :: Python",
