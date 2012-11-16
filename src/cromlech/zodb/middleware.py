@@ -42,9 +42,9 @@ class ZODBApp(object):
                     response = self.app(environ, start_response)
                     for chunk in response:
                         yield chunk
-                        close = getattr(response, 'close', None)
-                        if close is not None:
-                            close()
+                    close = getattr(response, 'close', None)
+                    if close is not None:
+                        close()
             finally:
                 del environ[self.key]
 
