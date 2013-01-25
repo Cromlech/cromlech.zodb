@@ -11,7 +11,6 @@ install_requires = [
     'transaction',
     'zope.interface',
     'zope.cachedescriptors',
-    'zope.component',
     'zope.location',
     'ZODB3',  # included Btrees and persistent.
     ]

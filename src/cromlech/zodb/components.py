@@ -1,52 +1,38 @@
 # -*- coding: utf-8 -*-
 
-import zope.component.interfaces
-import zope.component.persistentregistry
-import zope.interface
+import .interfaces
+import .registry
+
 import zope.location
 
+from crom import adapter, sources, target, ComponentLookupError
+from crom.interfaces import IRegistry, ILookup, implicit
 from BTrees.Length import Length
 from BTrees.OOBTree import OOBTree
 from persistent import Persistent
+
+from zope.interface import implements
 from zope.cachedescriptors.property import Lazy
 
-from cromlech.zodb import interfaces
 
-
-class PossibleSite(object):
-    """a base implementation of a possible site, to be used as
-    a mixin
+class Site(object):
+    """a base implementation of a site
     """
-    zope.interface.implements(zope.component.interfaces.IPossibleSite)
+    implements(interfaces.ISite)
 
-    _sm = None
+    _registry = None
 
-    def getSiteManager(self):
-        if self._sm is not None:
-            return self._sm
+    def getLocalLookup(self):
+        if self._registry is not None:
+            return registry.LocalRegistryWrapper(
+                '@registry', self, self._registry)
         else:
-            raise zope.component.interfaces.ComponentLookupError(
-                'no site manager defined')
+            raise ComponentLookupError('No local registry set.')
 
-    def setSiteManager(self, sm):
-        if zope.component.interfaces.ISite.providedBy(self):
-            raise TypeError("Already a site")
+    def setLocalRegistry(self, reg):
+        assert interfaces.IRegistry.providedBy(reg):
+        self._registry = reg
 
-        if zope.component.interfaces.IComponentLookup.providedBy(sm):
-            self._sm = sm
-        else:
-            raise ValueError('setSiteManager requires an IComponentLookup')
-
-        zope.interface.alsoProvides(self, zope.component.interfaces.ISite)
-
-
-class _LocalAdapterRegistry(
-    zope.component.persistentregistry.PersistentAdapterRegistry,
-    zope.location.Location,
-    ):
-    """
-    a location adapter registry used by LocalSiteManager
-    """
 
 
 class PersitentOOBTree(Persistent):
@@ -111,79 +97,19 @@ class PersitentOOBTree(Persistent):
         return self._data.values(key)
 
 
-class LocalSiteManager(
-    PersitentOOBTree,
-    zope.component.persistentregistry.PersistentComponents):
-    """Local Site Manager implementation for zodb
-    Use this to have an application with eg. local utility.
-    """
-    zope.interface.implements(interfaces.ILocalSiteManager)
-
-    subs = ()
-
-    def _setBases(self, bases):
-
-        # Update base subs
-        for base in self.__bases__:
-            if ((base not in bases)
-                 and interfaces.ILocalSiteManager.providedBy(base)):
-                base.removeSub(self)
-
-        for base in bases:
-            if ((base not in self.__bases__)
-                 and interfaces.ILocalSiteManager.providedBy(base)):
-                base.addSub(self)
-
-        super(LocalSiteManager, self)._setBases(bases)
-
-    def __init__(self, site):
-        PersitentOOBTree.__init__(self)
-        zope.component.persistentregistry.PersistentComponents.__init__(self)
-
-        # Set base site manager
-        # ATM in cromlech we are always the root
-        next = zope.component.getGlobalSiteManager()
-        self.__bases__ = (next, )
-
-        # Locate the site manager
-        site.setSiteManager(self)
-        self.__parent__ = site
-        self.__name__ = '++etc++site'
-
-    def _init_registries(self):
-        self.adapters = _LocalAdapterRegistry()
-        self.utilities = _LocalAdapterRegistry()
-        self.adapters.__parent__ = self.utilities.__parent__ = self
-        self.adapters.__name__ = u'adapters'
-        self.utilities.__name__ = u'utilities'
-
-    def addSub(self, sub):
-        """See interfaces.registration.ILocatedRegistry"""
-        self.subs += (sub, )
-
-    def removeSub(self, sub):
-        """See interfaces.registration.ILocatedRegistry"""
-        self.subs = tuple([s for s in self.subs if s is not sub])
-
-
-@zope.component.provideAdapter
-@zope.component.adapter(zope.interface.Interface)
-@zope.interface.implementer(zope.component.interfaces.IComponentLookup)
+@adapter
+@sources(Interface)
+@target(ILookup)
 def SiteManagerAdapter(ob):
-    """An adapter from ILocation to IComponentLookup.
+    """An adapter from ILocation to ILookup.
 
     The ILocation is interpreted flexibly, we just check for
     ``__parent__``.
     """
     current = ob
     while True:
-        if zope.component.interfaces.ISite.providedBy(current):
-            return current.getSiteManager()
+        if ISite.providedBy(current):
+            return current.getLocalLookup()
         current = getattr(current, '__parent__', None)
         if current is None:
-            # It is not a location or has no parent, so we return the global
-            # site manager
-            return zope.component.getGlobalSiteManager()
-
-# TODO :
-#   zope.site propagate IObjectMovedEvent to LocalSiteManager, shall we ?
+            return implicit.lookup
