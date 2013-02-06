@@ -1,38 +1,38 @@
 # -*- coding: utf-8 -*-
 
-import .interfaces
-import .registry
-
-import zope.location
-
-from crom import adapter, sources, target, ComponentLookupError
-from crom.interfaces import IRegistry, ILookup, implicit
+from .interfaces import ILookupNode
+from crom import implements, adapter, sources, target, implicit
+from crom import IRegistry, ILookup, ComponentLookupError
 from BTrees.Length import Length
 from BTrees.OOBTree import OOBTree
 from persistent import Persistent
-
-from zope.interface import implements
+from zope.interface import Interface
 from zope.cachedescriptors.property import Lazy
+from zope.location import ILocation, LocationProxy, locate
 
 
-class Site(object):
+@implements(ILookupNode)
+class LookupNode(object):
     """a base implementation of a site
     """
-    implements(interfaces.ISite)
-
+    implements(ILookupNode)
     _registry = None
 
-    def getLocalLookup(self):
-        if self._registry is not None:
-            return registry.LocalRegistryWrapper(
-                '@registry', self, self._registry)
-        else:
-            raise ComponentLookupError('No local registry set.')
+    def getLocalRegistry(self):
+        reg = self._registry
+        if not ILocation.providedBy(reg):
+            reg = LocationProxy(reg)
+            locate(reg, self, '@registry')
+        return reg
 
-    def setLocalRegistry(self, reg):
-        assert interfaces.IRegistry.providedBy(reg):
+    def setLocalRegistry(self, reg, locate=locate):
+        assert IRegistry.providedBy(reg)
+        if locate is not None:
+            if ILocation.providedBy(reg):
+                locate(reg, self, '@registry')
+            else:
+                raise TypeError("Can't locate non ILocation registries.")
         self._registry = reg
-
 
 
 class PersitentOOBTree(Persistent):
@@ -100,15 +100,10 @@ class PersitentOOBTree(Persistent):
 @adapter
 @sources(Interface)
 @target(ILookup)
-def SiteManagerAdapter(ob):
-    """An adapter from ILocation to ILookup.
-
-    The ILocation is interpreted flexibly, we just check for
-    ``__parent__``.
-    """
+def ClosestLookup(ob):
     current = ob
     while True:
-        if ISite.providedBy(current):
+        if ILookupNode.providedBy(current):
             return current.getLocalLookup()
         current = getattr(current, '__parent__', None)
         if current is None:

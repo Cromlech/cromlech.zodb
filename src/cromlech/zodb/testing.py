@@ -1,38 +1,20 @@
-from cromlech.zodb import PossibleSite
-import transaction
+# -*- coding: utf-8 -*-
+
+from transaction import manager
+from cromlech.zodb import LookupNode
 from persistent import Persistent
 from zope.interface import implements
-from zope.component.interfaces import ISite
 
 
-class SimpleApp(PossibleSite, Persistent):
+class SimpleApp(LookupNode, Persistent):
 
     def __call__(self):
         return "simply running !"
 
 
-class MyApp(PossibleSite, Persistent):
-    """An application
-    """
-    foo = 'spam'
-
-    def __call__(self):
-        return "running !"
-
-    def dofail(self):
-        raise Exception('failed !')
-
-
-def make_app(db):
+def store_app(db, app):
     """add a MyApp instance to db root under 'myapp'
     """
-    conn = db.open()
-    conn.root()['myapp'] = MyApp()
-    transaction.commit()
-
-
-class DummySite(Persistent):
-    implements(ISite)
-
-    def getSiteManager(self):
-        return self
+    with manager:
+        conn = db.open()
+        conn.root()['myapp'] = app

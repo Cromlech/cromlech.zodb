@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import transaction
-from cromlech.zodb.utils import init_db, eval_loader
+from cromlech.zodb.utils import init_db
 from cromlech.zodb.controlled import Connection
 
 
-def environ_transaction_manager(environ, key):
+def environ_transaction_manager(environ, key, default=transaction.manager):
     try:
         tm = environ[key]
     except KeyError:
-        tm = environ[key] = transaction.manager
+        tm = environ[key] = default
     return tm
 
 
@@ -57,24 +57,19 @@ def zodb_filter_middleware(
     key="zodb.connection",
     transaction_key='transaction.manager'):
     """
-    factory for :py:class:ZODBAppFactory
+    factory for :py:class:ZODBApp
 
     This middleware factory is compatible with the filter_app
     prototype from `PasteDeploy`. It can, however, be used with
     any WSGI server if properly called.
 
-    :param initializer: an optional ZODB initializer
-      module.dotted.name:callable,
-      eg: 'cromlech.zodb.utils:initialize_applications'
-    :param transaction: does the middelware needs to manage the transaction
+    :param configuration: XML-based ZODB conf
+    :param initializer: callable that takes 'db' as a parameter.
+    :param key: environ key used to retrieve an existing connection
+    :param transaction_key: environ key used to pass the transaction around.
 
     for other params see :py:meth:ZODBApp.__init__
     """
-    if initializer is not None:
-        # initializer is a string: py_module_path:class_or_function
-        initializer = eval_loader(initializer)
-
-    # configuration is an XML-based ZODB conf
     db = init_db(configuration, initializer)
 
     return ZODBApp(

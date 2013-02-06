@@ -1,10 +1,24 @@
+# -*- coding: utf-8 -*-
+
 import transaction
 from webtest import TestApp
 from ZODB import DB
 from ZODB.DemoStorage import DemoStorage
-
-from ..testing import make_app
+from cromlech.zodb import LookupNode
+from persistent import Persistent
 from ..middleware import ZODBApp
+
+
+class MyApp(LookupNode, Persistent):
+    """An application
+    """
+    foo = 'spam'
+
+    def __call__(self):
+        return "running !"
+
+    def dofail(self):
+        raise Exception('failed !')
 
 
 def test_middleware_simple():
@@ -18,7 +32,10 @@ def test_middleware_simple():
         return [environ['zodb'].root()['myapp']()]
 
     db = DB(DemoStorage())
-    make_app(db)
-    app = TestApp(ZODBApp(simple_app, db, 'zodb'))
 
+    with transaction.manager:
+        conn = db.open()
+        conn.root()['myapp'] = MyApp()
+    
+    app = TestApp(ZODBApp(simple_app, db, 'zodb'))
     assert app.get('/').body == 'running !'

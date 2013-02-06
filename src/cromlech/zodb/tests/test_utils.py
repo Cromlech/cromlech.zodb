@@ -1,30 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from ZODB import DB
-from ZODB.DemoStorage import DemoStorage
-import ZConfig
-import transaction
-from collections import OrderedDict
 
 import pytest
-
-from cromlech.zodb.utils import eval_loader, init_db, get_site
-from cromlech.zodb.utils import initialize_applications
-from ..testing import DummySite, MyApp, SimpleApp
-
-
-def test_eval_loader():
-    assert eval_loader('cromlech.zodb.utils:eval_loader') is eval_loader
-    assert (eval_loader('cromlech.zodb.tests.fixture:Foo').__doc__ ==
-            "class to test eval_loader")
-    with pytest.raises(RuntimeError):
-        eval_loader(':foo')
-    with pytest.raises(ImportError):
-        # module does not exists
-        eval_loader('cromlech.zodb.doesnotexiste:id')
-    with pytest.raises(ImportError):
-        # object inside module does not exists
-        eval_loader('cromlech.zodb.tests.fixture:Bar')
+import ZConfig
+import transaction
+from ..interfaces import IDBInitializer
+from crom import testing, implicit
+from ZODB import DB
+from ZODB.interfaces import IDatabase
+from ZODB.DemoStorage import DemoStorage
+from ..utils import init_db
 
 
 foo = object()
@@ -38,13 +23,23 @@ def add_foo(db):
     conn.close()
 
 
+def setup_function(method):
+    testing.setup()
+    implicit.lookup.registry.subscribe(
+        (IDatabase,), IDBInitializer, add_foo)
+
+
+def teardown_function(method):
+    testing.teardown()
+
+
 def test_init_db():
     configuration = """
         <zodb>
         <demostorage>
         </demostorage>
         </zodb>"""
-    db = init_db(configuration, add_foo)
+    db = init_db(configuration)
     conn = db.open()
     assert conn.root()['foo'] is foo
 
@@ -56,58 +51,4 @@ def test_init_db_bad_conf():
             </UNKNOWN_storage>
         </zodb>"""
     with pytest.raises(ZConfig.ConfigurationSyntaxError):
-        init_db(configuration, add_foo)
-
-
-def test_get_site():
-    mysite = DummySite()
-    db = DB(DemoStorage())
-    conn = db.open()
-    conn.root()['site'] = mysite
-    assert get_site(conn, 'site') is mysite
-    transaction.commit()
-    assert get_site(conn, 'site') is mysite
-
-    not_a_site = object()
-    conn.root()['foo'] = not_a_site
-    transaction.commit()
-    with pytest.raises(TypeError) as e:
-        get_site(conn, 'foo')
-    assert "'foo' does not exist" in e.value.message
-
-    with pytest.raises(KeyError):
-        get_site(conn, 'unknown')
-
-    transaction.abort()
-    conn.close()
-
-
-def test_initialize_applications():
-
-    def apps():
-        return {'mine':MyApp, 'app': SimpleApp, 'app2': SimpleApp,
-                'obj':tuple}
-
-    def failing_apps():
-        return OrderedDict((('foo', SimpleApp), ('spam', lambda: 1/0)))
-
-    db = DB(DemoStorage())
-    initialize_applications(db, apps)
-    conn = db.open()
-    root = conn.root()
-    assert root['mine']() == "running !"
-    assert root['app']() == "simply running !"
-    assert root['app2']() == "simply running !"
-    assert isinstance(root['obj'], tuple)
-    transaction.abort()
-    conn.close()
-
-    # verify it's all or nothing
-    try:
-        initialize_applications(db, failing_apps)
-    except ZeroDivisionError:
-        pass
-    conn = db.open()
-    root = conn.root()
-    assert 'foo' not in root
-    conn.close()
+        init_db(configuration)

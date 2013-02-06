@@ -17,31 +17,27 @@ LocalSiteManager
 The package provide a PossibleSite class to be used as a mixin for your
 applications root objects::
 
-    >>> from cromlech.zodb.components import PossibleSite
-    >>> from zope.component.interfaces import IPossibleSite
-    >>> from zope.interface.verify import verifyObject
+    >>> #from cromlech.zodb.components import PossibleSite
+    >>> #from zope.component.interfaces import IPossibleSite
+    >>> #from zope.interface.verify import verifyObject
     
-    >>> site = PossibleSite()
-    >>> verifyObject(IPossibleSite, site)
-    True
+    >>> #site = PossibleSite()
+    >>> #verifyObject(IPossibleSite, site)
 
 This is a possible site, not yet a site::
 
-    >>> from zope.component.interfaces import ISite
-    >>> ISite.providedBy(site)
-    False
+    >>> #from zope.component.interfaces import ISite
+    >>> #ISite.providedBy(site)
 
 We can set up a local site manager::
 
-    >>> from cromlech.zodb.components import LocalSiteManager
-    >>> from cromlech.zodb.interfaces import ILocalSiteManager
+    >>> #from cromlech.zodb.components import LocalSiteManager
+    >>> #from cromlech.zodb.interfaces import ILocalSiteManager
     
-    >>> lsm = LocalSiteManager(site)
-    >>> verifyObject(ILocalSiteManager, lsm)
-    True
+    >>> #lsm = LocalSiteManager(site)
+    >>> #verifyObject(ILocalSiteManager, lsm)
     
 A Possible site with a local site manager becomes an ISite::
 
-    >>> from zope.component.interfaces import ISite
-    >>> ISite.providedBy(site)
-    True
+    >>> #from zope.component.interfaces import ISite
+    >>> #ISite.providedBy(site)
