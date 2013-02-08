@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from crom import implicit, ILookup, ILookupsChain
-
 
 def close(conn):
     """This is the default callback to close a connection.

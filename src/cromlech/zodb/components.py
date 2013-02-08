@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from .interfaces import ILookupNode
-from crom import implements, adapter, sources, target, implicit
-from crom import IRegistry, ILookup, ComponentLookupError
+from crom import implements
+from crom import IRegistry
 from BTrees.Length import Length
 from BTrees.OOBTree import OOBTree
 from persistent import Persistent
-from zope.interface import Interface
 from zope.cachedescriptors.property import Lazy
 from zope.location import ILocation, LocationProxy, locate
 
@@ -95,16 +94,3 @@ class PersitentOOBTree(Persistent):
 
     def values(self, key=None):
         return self._data.values(key)
-
-
-@adapter
-@sources(Interface)
-@target(ILookup)
-def ClosestLookup(ob):
-    current = ob
-    while True:
-        if ILookupNode.providedBy(current):
-            return current.getLocalLookup()
-        current = getattr(current, '__parent__', None)
-        if current is None:
-            return implicit.lookup

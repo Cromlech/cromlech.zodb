@@ -28,6 +28,6 @@ class PersistentAdapterRegistry(VerifyingAdapterRegistry, Persistent):
 
 
 class PersistentRegistry(Location, Registry):
-    
+
     def __init__(self):
         self.registry = PersistentAdapterRegistry()
