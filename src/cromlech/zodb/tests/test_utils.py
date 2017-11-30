@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 
-from ZODB import DB
-from ZODB.DemoStorage import DemoStorage
+import pytest
 import ZConfig
 import transaction
+
 from collections import OrderedDict
 
-import pytest
-
-from cromlech.zodb.utils import eval_loader, init_db, get_site
+from ZODB import DB
+from ZODB.DemoStorage import DemoStorage
+from cromlech.zodb.utils import eval_loader, init_db
 from cromlech.zodb.utils import initialize_applications
+
 from ..testing import DummySite, MyApp, SimpleApp
 
 
@@ -57,29 +58,6 @@ def test_init_db_bad_conf():
         </zodb>"""
     with pytest.raises(ZConfig.ConfigurationSyntaxError):
         init_db(configuration, add_foo)
-
-
-def test_get_site():
-    mysite = DummySite()
-    db = DB(DemoStorage())
-    conn = db.open()
-    conn.root()['site'] = mysite
-    assert get_site(conn, 'site') is mysite
-    transaction.commit()
-    assert get_site(conn, 'site') is mysite
-
-    not_a_site = object()
-    conn.root()['foo'] = not_a_site
-    transaction.commit()
-    with pytest.raises(TypeError) as e:
-        get_site(conn, 'foo')
-    assert "'foo' does not exist" in e.value.message
-
-    with pytest.raises(KeyError):
-        get_site(conn, 'unknown')
-
-    transaction.abort()
-    conn.close()
 
 
 def test_initialize_applications():

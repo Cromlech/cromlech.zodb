@@ -1,11 +1,8 @@
 #!/usr/bin/python
 
 import ZODB.config
-from cromlech.zodb import LocalSiteManager
 from pkg_resources import iter_entry_points
 from transaction import manager as transaction_manager
-from zope.component.interfaces import ISite, IPossibleSite
-
 
 marker = object()
 
@@ -56,21 +53,26 @@ def init_db(configuration, initializer=None):
     return db
 
 
-def get_site(conn, name):
-    """Get a site in a database.
-
-    it simply fetch object under key 'name' at the root.
-
-    :param conn: the ZODB connection
-    :param name: name of the site
-    :raises KeyError: the site does not exist
-    :raises TypeError: the object is not an ISite
+def init_db_from_file(configuration, initializer=None):
     """
-    root = conn.root()
-    site = root[name]
-    if not ISite.providedBy(site):
-        raise TypeError("Site %r does not exist in the current ZODB." % name)
-    return site
+    This bootstrap the ZODB using initializer and a config from a file
+
+    :param configuration: The zodb configuration file descriptor
+    :ptype configuration: file
+
+    :param initializer: an optional method
+        which will be passed the ZODB as parameter
+        in order to eg. create basic initial objects if they do not exists.
+
+    :raises ConfigurationSyntaxError: on bad configuration string
+
+    .. seealso::
+       :py:fun:initialize_applications (sample initializer)
+    """
+    db = ZODB.config.databaseFromFile(configuration)
+    if initializer is not None:
+        initializer(db)
+    return db
 
 
 def list_applications():
@@ -117,8 +119,6 @@ def initialize_applications(db, list_applications=list_applications,
             for name, factory in apps.items():
                 if not name in root:
                     application = root[name] = factory()
-                    if (not ISite.providedBy(application) and
-                        IPossibleSite.providedBy(application)):
-                        LocalSiteManager(application)
+
     finally:
         conn.close()

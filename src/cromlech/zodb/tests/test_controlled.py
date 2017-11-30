@@ -4,13 +4,9 @@ import transaction
 
 from ZODB import DB
 from ZODB.DemoStorage import DemoStorage
-from zope.component.hooks import getSite
-from zope.component.interfaces import ISite
 from zope.interface import implements
 from persistent import Persistent
-
-from cromlech.zodb.components import PossibleSite
-from cromlech.zodb.controlled import Connection, Site
+from cromlech.zodb.controlled import Connection
 
 from ..testing import DummySite
 
@@ -62,20 +58,3 @@ def test_connection_manager_aborting():
             conn.root()['foo'] = 'bar'
             transaction_.abort()
     assert db.open().root().get('foo') is None  # transaction was aborted
-
-
-def test_site():
-
-    site = DummySite()
-
-    with Site(site):
-        assert getSite() is site
-    assert getSite() is not site
-
-    try:
-        with Site(site):
-            assert getSite() is site
-            raise RuntimeError('')
-    except RuntimeError:
-        pass
-    assert getSite() is not site

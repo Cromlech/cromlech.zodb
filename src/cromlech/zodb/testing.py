@@ -1,8 +1,8 @@
-from cromlech.zodb import PossibleSite
+# -*- coding: utf-8 -*-
+
 import transaction
 from persistent import Persistent
 from zope.interface import implements
-from zope.component.interfaces import ISite
 
 
 class SimpleApp(PossibleSite, Persistent):
@@ -32,7 +32,4 @@ def make_app(db):
 
 
 class DummySite(Persistent):
-    implements(ISite)
-
-    def getSiteManager(self):
-        return self
+    pass

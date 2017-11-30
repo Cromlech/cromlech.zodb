@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from zope.component.hooks import setSite
-
 
 def close(conn):
     """This is the default callback to close a connection.
@@ -40,24 +38,3 @@ class Connection(object):
 
     def __exit__(self, type, value, traceback):
         self.close(self.conn)
-
-
-class Site(object):
-    """A context manager to work in a site
-
-    This simply setSite àla zope
-    (see :py:func:zope.component.hooks.setSite)
-    """
-
-    def __init__(self, site):
-        """
-        :ptype site: a :py:func:zope.component.interfaces.ISite
-        """
-        self.site = site
-
-    def __enter__(self):
-        setSite(self.site)
-        return self.site
-
-    def __exit__(self, type, value, traceback):
-        setSite(None)

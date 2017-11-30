@@ -1,9 +1,10 @@
-from ZODB import DB
-from ZODB.DemoStorage import DemoStorage
-import transaction
+# -*- coding: utf-8 -*-
 
 import pytest
+import transaction
 
+from ZODB import DB
+from ZODB.DemoStorage import DemoStorage
 from cromlech.zodb import components
 
 

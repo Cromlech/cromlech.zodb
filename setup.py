@@ -4,14 +4,13 @@ import os
 from setuptools import setup, find_packages
 
 
-version = '0.3.1'
+version = '0.5'
 
 install_requires = [
     'setuptools',
     'transaction',
     'zope.interface',
     'zope.cachedescriptors',
-    'zope.component',
     'zope.location',
     'ZODB3',  # included Btrees and persistent.
     ]
