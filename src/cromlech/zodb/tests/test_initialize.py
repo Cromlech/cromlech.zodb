@@ -7,7 +7,6 @@ import pytest
 from ZODB import DB
 from ZODB.DemoStorage import DemoStorage
 from cromlech.zodb import utils
-from cromlech.zodb.components import PossibleSite
 from persistent import Persistent
 
 
@@ -39,18 +38,18 @@ class EntryPointMocker(object):
         utils.iter_entry_points = self.original
 
 
-class MyApp(PossibleSite, Persistent):
+class MyApp(Persistent):
     """An application"""
 
     def __call__(self):
-        return "running !"
+        return b"running !"
 
 
 class YourApp(MyApp):
     """An application"""
 
     def __call__(self):
-        return "Also running !"
+        return b"Also running !"
 
 
 def test_initialize():
@@ -62,10 +61,10 @@ def test_initialize():
         conn = db.open()
         assert 'myapp' in conn.root()
         assert isinstance(conn.root()['myapp'], MyApp)
-        assert conn.root()['myapp']() == 'running !'
+        assert conn.root()['myapp']() == b'running !'
         assert 'yourapp' in conn.root()
         assert isinstance(conn.root()['yourapp'], YourApp)
-        assert conn.root()['yourapp']() == 'Also running !'
+        assert conn.root()['yourapp']() == b'Also running !'
 
 
 def test_no_implementation_fails():

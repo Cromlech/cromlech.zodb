@@ -73,9 +73,9 @@ def test_initialize_applications():
     initialize_applications(db, apps)
     conn = db.open()
     root = conn.root()
-    assert root['mine']() == "running !"
-    assert root['app']() == "simply running !"
-    assert root['app2']() == "simply running !"
+    assert root['mine']() == b"running !"
+    assert root['app']() == b"simply running !"
+    assert root['app2']() == b"simply running !"
     assert isinstance(root['obj'], tuple)
     transaction.abort()
     conn.close()

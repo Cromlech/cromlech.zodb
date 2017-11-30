@@ -5,19 +5,19 @@ from persistent import Persistent
 from zope.interface import implements
 
 
-class SimpleApp(PossibleSite, Persistent):
+class SimpleApp(Persistent):
 
     def __call__(self):
-        return "simply running !"
+        return b"simply running !"
 
 
-class MyApp(PossibleSite, Persistent):
+class MyApp(Persistent):
     """An application
     """
     foo = 'spam'
 
     def __call__(self):
-        return "running !"
+        return b"running !"
 
     def dofail(self):
         raise Exception('failed !')
