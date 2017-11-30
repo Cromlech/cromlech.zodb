@@ -8,8 +8,6 @@ from BTrees.OOBTree import OOBTree
 from persistent import Persistent
 from zope.cachedescriptors.property import Lazy
 
-from cromlech.zodb import interfaces
-
 
 class PersitentOOBTree(Persistent):
     """A persitent wrapper around a OOBTree"""
