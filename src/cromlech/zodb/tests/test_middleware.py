@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import transaction
-from webtest import TestApp
+from webtest import TestApp as WSGIApp
 from ZODB import DB
 from ZODB.DemoStorage import DemoStorage
 from cromlech.zodb import LookupNode
@@ -15,7 +15,7 @@ class MyApp(LookupNode, Persistent):
     foo = 'spam'
 
     def __call__(self):
-        return "running !"
+        return b"running !"
 
     def dofail(self):
         raise Exception('failed !')
@@ -27,7 +27,7 @@ def test_middleware_simple():
     def simple_app(environ, start_response):
         assert (environ['transaction.manager'] ==
                 transaction.manager)
-        assert environ['zodb'].root()['myapp']() == 'running !'
+        assert environ['zodb'].root()['myapp']() == b'running !'
         start_response('200 OK', [('Content-Type', 'plain/text')])
         return [environ['zodb'].root()['myapp']()]
 
@@ -36,6 +36,6 @@ def test_middleware_simple():
     with transaction.manager:
         conn = db.open()
         conn.root()['myapp'] = MyApp()
-    
-    app = TestApp(ZODBApp(simple_app, db, 'zodb'))
-    assert app.get('/').body == 'running !'
+
+    app = WSGIApp(ZODBApp(simple_app, db, 'zodb'))
+    assert app.get('/').body == b'running !'

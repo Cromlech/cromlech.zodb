@@ -13,13 +13,16 @@ install_requires = [
     'zope.interface',
     'zope.cachedescriptors',
     'zope.location',
-    'ZODB3',  # included Btrees and persistent.
-    ]
+    'ZODB',
+    'BTrees',
+    'persistent',
+]
 
 tests_require = [
     'pytest',
     'WebTest',
-    ]
+]
+
 
 setup(name='cromlech.zodb',
       version=version,
