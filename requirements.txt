@@ -1,0 +1,2 @@
+git+https://github.com/Cromlech/crom.git#egg=crom
+git+https://github.com/Cromlech/grokker.git#egg=grokker
